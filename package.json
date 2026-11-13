@@ -1,0 +1,79 @@
+{
+  "name": "stickypad",
+  "version": "1.0.0",
+  "description": "A digital sticky note desktop app that lives on your PC screen.",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "electron scripts/verify-app.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "keywords": [
+    "sticky-notes",
+    "notepad",
+    "desktop-app",
+    "electron",
+    "productivity",
+    "checklist"
+  ],
+  "author": "Karnozetrex <kalashrao23@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Karnozetrex/stickypad.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Karnozetrex/stickypad/issues"
+  },
+  "homepage": "https://github.com/Karnozetrex/stickypad#readme",
+  "license": "MIT",
+  "build": {
+    "appId": "com.stickypad.app",
+    "productName": "StickyPad",
+    "asar": true,
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "assets/icon.png"
+    }
+  },
+  "devDependencies": {
+    "electron": "^40.8.0",
+    "electron-builder": "^26.0.12"
+  }
+}

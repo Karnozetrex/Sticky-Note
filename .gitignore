@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+out/
+build/
+
+# Logs
+*.log
+*log.txt
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and local configs
+.env
+.env.*
+*.local
+
+# Operating System files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# Editor and IDE metadata
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local test runs and user data
+userData/
+*.tmp
+*.backup.json
+stickypad-notes.json*
+stickypad-trash.json*
+stickypad-archive.json*

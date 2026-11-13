@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; img-src 'self' data:;">
+  <title>StickyPad Note</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-yellow font-sans style-classic">
+  <div id="stickyNote" class="sticky-note">
+    <!-- Top Washi Tape (for Taped / Anime style) -->
+    <div id="washiTape" class="washi-tape" aria-hidden="true"></div>
+
+    <!-- Bent Edge Lifted Shadow (for Bent Edge style) -->
+    <div id="bentShadow" class="bent-shadow" aria-hidden="true"></div>
+
+    <!-- Top Bar Controls -->
+    <header class="note-header" id="noteHeader">
+      <div class="header-left">
+        <!-- New Note Button -->
+        <button id="btnNew" class="icon-btn" title="New Note (Ctrl+Shift+N)" aria-label="New Note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+
+        <!-- Collapse / Expand Button -->
+        <button id="btnCollapse" class="icon-btn" title="Collapse / Expand Note" aria-label="Collapse Note">
+          <svg id="collapseIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Drag Title / Collapsed Label -->
+      <div class="header-drag-zone" id="headerDragZone">
+        <span id="collapsedPreview" class="collapsed-preview">Sticky Note</span>
+      </div>
+
+      <div class="header-right">
+        <!-- Reminder Trigger -->
+        <button id="btnReminder" class="icon-btn" title="Set Reminder" aria-label="Reminder">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span id="reminderBadge" class="reminder-badge hidden"></span>
+        </button>
+
+        <!-- Always On Top (Pin) -->
+        <button id="btnPin" class="icon-btn" title="Always on Top (Pin)" aria-label="Always on Top">
+          <svg id="pinIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="12" y1="17" x2="12" y2="22"></line>
+            <path d="M5 17h14l-2-7V4H7v6l-2 7z"></path>
+            <line x1="9" y1="4" x2="15" y2="4"></line>
+          </svg>
+        </button>
+
+        <!-- Lock Note (Clicks Pass Through) -->
+        <button id="btnLock" class="icon-btn" title="Lock Note (Clicks pass through)" aria-label="Lock Note">
+          <svg id="lockIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path id="lockShackle" d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span id="lockBadge" class="lock-badge hidden">🔒</span>
+        </button>
+
+        <!-- More Options Menu (⋯) -->
+        <button id="btnMore" class="icon-btn" title="More Options (⋯)" aria-label="More Options">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="12" r="2.2"></circle>
+            <circle cx="12" cy="12" r="2.2"></circle>
+            <circle cx="19" cy="12" r="2.2"></circle>
+          </svg>
+        </button>
+
+        <!-- Delete Note (Always Pinned to Far Right) -->
+        <button id="btnDelete" class="icon-btn delete-btn" title="Delete Note" aria-label="Delete Note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- More Actions Dropdown Menu (Attached to ⋯ button) -->
+    <div id="morePopover" class="popover more-popover hidden">
+      <div class="popover-title">More Options</div>
+      <div class="more-menu-list">
+        <button id="btnColor" class="more-menu-item" type="button">
+          <span class="more-item-icon">🎨</span>
+          <span class="more-item-text">Note Color</span>
+        </button>
+        <button id="btnStyle" class="more-menu-item" type="button">
+          <span class="more-item-icon">✍️</span>
+          <span class="more-item-text">Paper Style & Fonts</span>
+        </button>
+        <button id="btnTimer" class="more-menu-item" type="button">
+          <span class="more-item-icon">⏱️</span>
+          <span class="more-item-text">Timer & Pomodoro</span>
+          <span id="timerBadge" class="timer-badge hidden"></span>
+        </button>
+        <button id="btnSticker" class="more-menu-item" type="button">
+          <span class="more-item-icon">⭐</span>
+          <span class="more-item-text">Stickers & Doodles</span>
+        </button>
+        <button id="btnTemplatesMenu" class="more-menu-item" type="button">
+          <span class="more-item-icon">📋</span>
+          <span class="more-item-text">New from Template</span>
+        </button>
+        <button id="btnShare" class="more-menu-item" type="button">
+          <span class="more-item-icon">📤</span>
+          <span class="more-item-text">Share as Image</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Templates Menu Popover (Attached to + button) -->
+    <div id="templatesPopover" class="popover templates-popover hidden">
+      <div class="popover-title">New Note Template</div>
+      <div class="templates-list" id="templatesList">
+        <button class="template-item-btn" data-template="blank">
+          <span class="template-icon">📝</span>
+          <span class="template-name">Blank note</span>
+        </button>
+        <button class="template-item-btn" data-template="shopping">
+          <span class="template-icon">🛒</span>
+          <span class="template-name">Shopping list</span>
+        </button>
+        <button class="template-item-btn" data-template="daily-todo">
+          <span class="template-icon">✅</span>
+          <span class="template-name">Daily to-do</span>
+        </button>
+        <button class="template-item-btn" data-template="study-plan">
+          <span class="template-icon">📚</span>
+          <span class="template-name">Study plan</span>
+        </button>
+        <button class="template-item-btn" data-template="meeting-notes">
+          <span class="template-icon">👥</span>
+          <span class="template-name">Meeting notes</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Color Palette Popover -->
+    <div id="colorPopover" class="popover color-popover hidden">
+      <div class="popover-title">Note Color</div>
+      <div class="color-grid">
+        <button class="color-swatch swatch-yellow" data-color="yellow" title="Sun Yellow"></button>
+        <button class="color-swatch swatch-peach" data-color="peach" title="Warm Peach"></button>
+        <button class="color-swatch swatch-pink" data-color="pink" title="Blossom Pink"></button>
+        <button class="color-swatch swatch-purple" data-color="purple" title="Lavender"></button>
+        <button class="color-swatch swatch-blue" data-color="blue" title="Sky Blue"></button>
+        <button class="color-swatch swatch-green" data-color="green" title="Mint Green"></button>
+        <button class="color-swatch swatch-taupe" data-color="taupe" title="Warm Gray"></button>
+        <button class="color-swatch swatch-teal" data-color="teal" title="Aqua Teal"></button>
+      </div>
+    </div>
+
+    <!-- Style Popover (Paper Style Thumbnails, Font, Size, Opacity) -->
+    <div id="stylePopover" class="popover style-popover hidden">
+      <!-- 1. Real Paper Styles Row with Visual Preview Thumbnails -->
+      <div class="popover-section">
+        <div class="style-header-row">
+          <label class="popover-label">Paper Style</label>
+        </div>
+        <div class="style-thumbnails-grid">
+          <button class="style-thumb-btn active" data-style="classic" title="Classic Straight">
+            <div class="thumb-preview thumb-classic"></div>
+            <span>Straight</span>
+          </button>
+          <button class="style-thumb-btn" data-style="corner-curl" title="Corner Curl (48px)">
+            <div class="thumb-preview thumb-corner-curl"></div>
+            <span>Curl</span>
+          </button>
+          <button class="style-thumb-btn" data-style="bent-edge" title="Bent Edge (12px arc)">
+            <div class="thumb-preview thumb-bent-edge"></div>
+            <span>Bent</span>
+          </button>
+          <button class="style-thumb-btn" data-style="wavy-curl" title="Wavy Ripple">
+            <div class="thumb-preview thumb-wavy-curl"></div>
+            <span>Wavy</span>
+          </button>
+          <button class="style-thumb-btn" data-style="taped" title="Pinned / Taped">
+            <div class="thumb-preview thumb-taped"></div>
+            <span>Taped</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Font Style -->
+      <div class="popover-section">
+        <label class="popover-label">Font Family</label>
+        <div class="segmented-control font-segments">
+          <button id="fontBtnSans" class="segment-btn active" data-font="sans">Clean</button>
+          <button id="fontBtnHand" class="segment-btn" data-font="handwriting">Handwriting</button>
+          <button id="fontBtnManga" class="segment-btn" data-font="manga">Manga</button>
+        </div>
+      </div>
+
+      <!-- 4. Font Size -->
+      <div class="popover-section">
+        <label class="popover-label">Font Size</label>
+        <div class="size-controls">
+          <button id="btnFontSmaller" class="size-btn" title="Smaller font">A-</button>
+          <span id="fontSizeDisplay" class="size-indicator">16px</span>
+          <button id="btnFontBigger" class="size-btn" title="Larger font">A+</button>
+        </div>
+      </div>
+
+      <!-- 5. Transparency Slider -->
+      <div class="popover-section">
+        <div class="slider-header">
+          <label class="popover-label" for="opacitySlider">Transparency</label>
+          <span id="opacityDisplay" class="slider-value">100%</span>
+        </div>
+        <input type="range" id="opacitySlider" min="30" max="100" step="5" value="100">
+      </div>
+    </div>
+
+    <!-- Share Popover -->
+    <div id="sharePopover" class="popover share-popover hidden">
+      <div class="popover-title">Share Note as Image</div>
+      <div class="popover-section">
+        <label class="popover-label">Export Background</label>
+        <div class="segmented-control">
+          <button id="bgBtnTransparent" class="segment-btn active" data-bg="transparent">Transparent</button>
+          <button id="bgBtnWhite" class="segment-btn" data-bg="white">White</button>
+        </div>
+      </div>
+      <div class="share-actions">
+        <button id="btnCopyImage" class="btn-share-action">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy Image
+        </button>
+        <button id="btnSaveImage" class="btn-share-action">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Save as Image
+        </button>
+      </div>
+    </div>
+
+    <!-- Reminder Popover -->
+    <div id="reminderPopover" class="popover reminder-popover hidden">
+      <div class="popover-title">Reminder 🔔</div>
+
+      <div id="activeReminderBox" class="active-reminder-box hidden">
+        <div class="active-reminder-row">
+          <span class="active-reminder-label">Due:</span>
+          <span id="activeReminderText" class="active-reminder-text"></span>
+        </div>
+        <button id="btnCancelReminder" class="btn-cancel-reminder" type="button">Cancel reminder</button>
+      </div>
+
+      <div class="popover-section">
+        <label class="popover-label">Quick Options</label>
+        <div class="reminder-presets-row reminder-presets-row-4">
+          <button class="reminder-preset-btn" data-preset="5m" type="button">5 min</button>
+          <button class="reminder-preset-btn" data-preset="10m" type="button">10 min</button>
+          <button class="reminder-preset-btn" data-preset="30m" type="button">30 min</button>
+          <button class="reminder-preset-btn" data-preset="1h" type="button">1 hour</button>
+        </div>
+        <div class="reminder-presets-row reminder-presets-row-2">
+          <button class="reminder-preset-btn" data-preset="tonight" type="button">Tonight 6 PM</button>
+          <button class="reminder-preset-btn" data-preset="tomorrow" type="button">Tomorrow 9 AM</button>
+        </div>
+      </div>
+
+      <div class="popover-section">
+        <label class="popover-label" for="reminderCustomInput">Custom Date & Time</label>
+        <div class="reminder-custom-row">
+          <input type="datetime-local" id="reminderCustomInput" class="reminder-custom-input">
+          <button id="btnSetCustomReminder" class="btn-set-custom" type="button">Set</button>
+        </div>
+        <span id="reminderError" class="reminder-error hidden">Pick a future time</span>
+      </div>
+    </div>
+
+    <!-- Timer / Pomodoro Popover -->
+    <div id="timerPopover" class="popover timer-popover hidden">
+      <div class="popover-title">Note Timer ⏱️</div>
+      <div class="popover-section">
+        <label class="popover-label">Pomodoro</label>
+        <div class="timer-pomodoro-row">
+          <button id="btnPresetPomodoro" class="btn-timer-preset pomodoro" data-mins="25" data-mode="pomodoro">
+            🍅 Pomodoro (25m / 5m)
+          </button>
+        </div>
+      </div>
+      <div class="popover-section">
+        <label class="popover-label">Countdown Presets</label>
+        <div class="timer-presets-grid">
+          <button class="btn-timer-preset" data-mins="5">5 min</button>
+          <button class="btn-timer-preset" data-mins="10">10 min</button>
+          <button class="btn-timer-preset" data-mins="15">15 min</button>
+          <button class="btn-timer-preset" data-mins="25">25 min</button>
+        </div>
+      </div>
+      <div class="popover-section">
+        <label class="popover-label" for="customTimerMinutes">Custom Minutes</label>
+        <div class="timer-custom-row">
+          <input type="number" id="customTimerMinutes" class="timer-custom-input" min="1" max="180" value="20">
+          <button id="btnStartCustomTimer" class="btn-start-timer" type="button">Start</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticker & Doodle Tray Popover -->
+    <div id="stickerPopover" class="popover sticker-popover hidden">
+      <div class="popover-tabs">
+        <button id="tabBtnStickers" class="popover-tab-btn active" type="button">Stickers</button>
+        <button id="tabBtnDoodle" class="popover-tab-btn" type="button">Doodle Pen</button>
+      </div>
+
+      <!-- Tab 1: Stickers Tray -->
+      <div id="stickerTraySection" class="sticker-tray-section">
+        <div class="sticker-grid">
+          <button class="sticker-choice-btn" data-emoji="⭐" type="button">⭐</button>
+          <button class="sticker-choice-btn" data-emoji="❤️" type="button">❤️</button>
+          <button class="sticker-choice-btn" data-emoji="📌" type="button">📌</button>
+          <button class="sticker-choice-btn" data-emoji="🌸" type="button">🌸</button>
+          <button class="sticker-choice-btn" data-emoji="✅" type="button">✅</button>
+          <button class="sticker-choice-btn" data-emoji="⚠️" type="button">⚠️</button>
+          <button class="sticker-choice-btn" data-emoji="🔥" type="button">🔥</button>
+          <button class="sticker-choice-btn" data-emoji="🎉" type="button">🎉</button>
+          <button class="sticker-choice-btn" data-emoji="☕" type="button">☕</button>
+          <button class="sticker-choice-btn" data-emoji="✨" type="button">✨</button>
+          <button class="sticker-choice-btn" data-emoji="💡" type="button">💡</button>
+          <button class="sticker-choice-btn" data-emoji="👍" type="button">👍</button>
+          <button class="sticker-choice-btn" data-emoji="🎯" type="button">🎯</button>
+          <button class="sticker-choice-btn" data-emoji="🚀" type="button">🚀</button>
+          <button class="sticker-choice-btn" data-emoji="🐱" type="button">🐱</button>
+          <button class="sticker-choice-btn" data-emoji="🍕" type="button">🍕</button>
+        </div>
+        <div class="sticker-tray-hint">Click sticker to drop on note. Drag, resize, or delete it!</div>
+      </div>
+
+      <!-- Tab 2: Doodle Controls -->
+      <div id="doodleControlsSection" class="doodle-controls-section hidden">
+        <div class="popover-section">
+          <button id="btnTogglePen" class="btn-toggle-pen" type="button">✏️ Pen Mode: OFF</button>
+        </div>
+
+        <div class="popover-section">
+          <label class="popover-label">Pen Color</label>
+          <div class="doodle-color-row">
+            <button class="doodle-color-btn active" data-color="#1e293b" style="background:#1e293b" title="Black" type="button"></button>
+            <button class="doodle-color-btn" data-color="#ef4444" style="background:#ef4444" title="Red" type="button"></button>
+            <button class="doodle-color-btn" data-color="#2563eb" style="background:#2563eb" title="Blue" type="button"></button>
+            <button class="doodle-color-btn" data-color="#059669" style="background:#059669" title="Green" type="button"></button>
+          </div>
+        </div>
+
+        <div class="popover-section">
+          <label class="popover-label">Brush Size</label>
+          <div class="doodle-size-row">
+            <button class="doodle-size-btn" data-size="2" title="Fine" type="button">Fine</button>
+            <button class="doodle-size-btn active" data-size="4" title="Medium" type="button">Med</button>
+            <button class="doodle-size-btn" data-size="8" title="Thick" type="button">Thick</button>
+          </div>
+        </div>
+
+        <div class="popover-section doodle-tools-row">
+          <button id="btnToolPen" class="doodle-tool-btn active" title="Pen Tool" type="button">✏️ Pen</button>
+          <button id="btnToolEraser" class="doodle-tool-btn" title="Eraser Tool" type="button">🧹 Eraser</button>
+          <button id="btnUndoDoodle" class="doodle-tool-btn" title="Undo Last Stroke" type="button">↩️ Undo</button>
+          <button id="btnClearDoodles" class="doodle-tool-btn danger" title="Clear All Doodles" type="button">🗑️ Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Tooltip/Dialog -->
+    <div id="deleteConfirm" class="popover confirm-dialog hidden" role="dialog" aria-labelledby="confirmDeleteText" aria-modal="true">
+      <div id="confirmDeleteText" class="confirm-text">Are you sure you've finished everything in this note? 📝</div>
+      <div class="confirm-actions">
+        <button id="btnCancelDelete" class="btn-cancel" type="button">Not yet</button>
+        <button id="btnConfirmDelete" class="btn-danger" type="button">Yes, toss it</button>
+      </div>
+    </div>
+
+    <!-- Timer Strip (Shown when timer or Pomodoro is running) -->
+    <div id="timerStrip" class="timer-strip hidden">
+      <div class="timer-strip-info">
+        <span id="timerStripIcon" class="timer-strip-icon">⏱️</span>
+        <span id="timerStripLabel" class="timer-strip-label">Timer</span>
+        <span id="timerStripTime" class="timer-strip-time">25:00</span>
+      </div>
+      <div class="timer-strip-controls">
+        <button id="timerPlayPauseBtn" class="timer-mini-btn" title="Start / Pause" type="button">▶️</button>
+        <button id="timerResetBtn" class="timer-mini-btn" title="Reset Timer" type="button">🔄</button>
+        <button id="timerCloseBtn" class="timer-mini-btn" title="Close Timer" type="button">✖</button>
+      </div>
+    </div>
+
+    <!-- Editor Body (with Counter-tilt container keeping text perfectly straight and sharp) -->
+    <main class="note-body" id="noteBody">
+      <!-- Doodling Canvas & Interactive Stickers Overlay -->
+      <canvas id="doodleCanvas" class="doodle-canvas"></canvas>
+      <div id="stickersContainer" class="stickers-container"></div>
+
+      <div 
+        id="editor" 
+        class="editor-content" 
+        contenteditable="true" 
+        spellcheck="false" 
+        placeholder="Take a note...&#10;Type '- [ ] ' for checklist"
+      ></div>
+    </main>
+
+    <!-- Bottom Status / Resize Corner Helper -->
+    <footer class="note-footer" id="noteFooter">
+      <span id="saveStatus" class="save-status">Saved</span>
+      <div class="resize-grip" id="footerResizeGrip" title="Drag to resize">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="11" y1="2" x2="2" y2="11"></line>
+          <line x1="11" y1="5.5" x2="5.5" y2="11"></line>
+          <line x1="11" y1="9" x2="9" y2="11"></line>
+        </svg>
+      </div>
+    </footer>
+
+    <!-- Interactive Multi-Edge & Corner Resize Handles (Always above paper & shadows) -->
+    <div id="resizeHandleBR" class="resize-handle-br" title="Drag to resize">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <line x1="11" y1="2" x2="2" y2="11"></line>
+        <line x1="11" y1="5.5" x2="5.5" y2="11"></line>
+        <line x1="11" y1="9" x2="9" y2="11"></line>
+      </svg>
+    </div>
+    <div id="resizeHandleBL" class="resize-handle-bl" title="Drag to resize"></div>
+    <div id="resizeEdgeR" class="resize-edge-r" title="Drag to resize width"></div>
+    <div id="resizeEdgeB" class="resize-edge-b" title="Drag to resize height"></div>
+
+    <!-- Physical Peeling Corner -->
+    <div id="peelCorner" class="peel-corner" aria-hidden="true">
+      <div class="peel-shadow"></div>
+      <div class="peel-fold"></div>
+    </div>
+
+    <!-- Floating Feedback Toast -->
+    <div id="toast" class="toast hidden">Copied to clipboard! 📋</div>
+  </div>
+
+  <script src="sanitizer.js"></script>
+  <script src="soundEffects.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

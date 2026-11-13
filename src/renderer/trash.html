@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; img-src 'self' data:;">
+  <title>StickyPad — Trash</title>
+  <link rel="stylesheet" href="trash.css">
+</head>
+<body>
+  <div class="trash-app">
+    <header class="trash-header">
+      <div class="header-info">
+        <h1 class="header-title">Trash 🗑️</h1>
+        <p class="header-subtitle">Trashed notes are permanently purged after 30 days.</p>
+      </div>
+      <button id="btnEmptyTrash" class="btn-empty-trash" title="Permanently delete all items">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        Empty Trash
+      </button>
+    </header>
+
+    <main class="trash-content" id="trashContent">
+      <div id="trashList" class="trash-list">
+        <!-- Dynamically rendered list of trashed notes -->
+      </div>
+
+      <div id="trashEmpty" class="trash-empty hidden">
+        <div class="empty-icon">✨</div>
+        <div class="empty-text">Your trash is empty.</div>
+        <div class="empty-subtext">Clean workspace, clear mind!</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="trash.js"></script>
+</body>
+</html>

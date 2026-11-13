@@ -1,0 +1,2192 @@
+/* ==========================================================================
+   StickyPad — Digital Sticky Note Stylesheet
+   ========================================================================== */
+
+/* Embedded offline handwriting fonts */
+@font-face {
+  font-family: 'Caveat';
+  src: url('../../assets/fonts/Caveat.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Patrick Hand';
+  src: url('../../assets/fonts/PatrickHand.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Base reset & typography variables */
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-hand: 'Caveat', 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive;
+  --font-manga: 'Patrick Hand', 'Comic Sans MS', cursive;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-peel: 0.2s cubic-bezier(0.2, 0, 0.2, 1);
+  --radius-window: 8px;
+  --radius-ui: 6px;
+  --shadow-paper: 3px 12px 28px -3px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.12);
+  --shadow-paper-hover: 4px 16px 36px -3px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.15);
+  --shadow-popover: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* 24px transparent padding around note so tilt, deep shadows, and curls never clip */
+body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   Color Themes (8 Authentic 100% Solid Paper Palettes)
+   ========================================================================== */
+
+/* 1. Yellow (Classic Post-it) */
+body.theme-yellow {
+  --bg-note: #fef08a;
+  --bg-header-hover: rgba(0, 0, 0, 0.08);
+  --text-main: #1c1917;
+  --text-muted: rgba(28, 25, 23, 0.7);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --accent: #ca8a04;
+  --checkbox-border: #854d0e;
+  --popover-bg: #fffbeb;
+  --washi-bg: rgba(254, 240, 138, 0.85);
+  --curl-back: #fffef0;
+}
+
+/* 2. Peach */
+body.theme-peach {
+  --bg-note: #fed7aa;
+  --bg-header-hover: rgba(0, 0, 0, 0.08);
+  --text-main: #1c1917;
+  --text-muted: rgba(28, 25, 23, 0.7);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --accent: #ea580c;
+  --checkbox-border: #9a3412;
+  --popover-bg: #fff7ed;
+  --washi-bg: rgba(254, 215, 170, 0.85);
+  --curl-back: #fff8f0;
+}
+
+/* 3. Pink */
+body.theme-pink {
+  --bg-note: #fbcfe8;
+  --bg-header-hover: rgba(0, 0, 0, 0.08);
+  --text-main: #1c1917;
+  --text-muted: rgba(28, 25, 23, 0.7);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --accent: #db2777;
+  --checkbox-border: #9d174d;
+  --popover-bg: #fdf2f8;
+  --washi-bg: rgba(251, 207, 232, 0.85);
+  --curl-back: #fff5fa;
+}
+
+/* 4. Purple */
+body.theme-purple {
+  --bg-note: #e9d5ff;
+  --bg-header-hover: rgba(0, 0, 0, 0.08);
+  --text-main: #1c1917;
+  --text-muted: rgba(28, 25, 23, 0.7);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --accent: #9333ea;
+  --checkbox-border: #6b21a8;
+  --popover-bg: #faf5ff;
+  --washi-bg: rgba(233, 213, 255, 0.85);
+  --curl-back: #faf5ff;
+}
+
+/* 5. Blue */
+body.theme-blue {
+  --bg-note: #bae6fd;
+  --bg-header-hover: rgba(0, 0, 0, 0.08);
+  --text-main: #0c4a6e;
+  --text-muted: rgba(12, 74, 110, 0.7);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --accent: #0284c7;
+  --checkbox-border: #0369a1;
+  --popover-bg: #f0f9ff;
+  --washi-bg: rgba(186, 230, 253, 0.85);
+  --curl-back: #f0faff;
+}
+
+/* 6. Green */
+body.theme-green {
+  --bg-note: #bbf7d0;
+  --bg-header-hover: rgba(0, 0, 0, 0.08);
+  --text-main: #14532d;
+  --text-muted: rgba(20, 83, 45, 0.7);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --accent: #16a34a;
+  --checkbox-border: #15803d;
+  --popover-bg: #f0fdf4;
+  --washi-bg: rgba(187, 247, 208, 0.85);
+  --curl-back: #f4fdf7;
+}
+
+/* 7. Taupe / Warm Gray */
+body.theme-taupe {
+  --bg-note: #e7e5e4;
+  --bg-header-hover: rgba(0, 0, 0, 0.08);
+  --text-main: #292524;
+  --text-muted: rgba(41, 37, 36, 0.7);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --accent: #57534e;
+  --checkbox-border: #44403c;
+  --popover-bg: #f5f5f4;
+  --washi-bg: rgba(231, 229, 228, 0.85);
+  --curl-back: #fafaf9;
+}
+
+/* 8. Aqua Teal */
+body.theme-teal {
+  --bg-note: #99f6e4;
+  --bg-header-hover: rgba(0, 0, 0, 0.08);
+  --text-main: #134e4a;
+  --text-muted: rgba(19, 78, 74, 0.75);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --accent: #0d9488;
+  --checkbox-border: #0f766e;
+  --popover-bg: #f0fdfa;
+  --washi-bg: rgba(153, 246, 228, 0.85);
+  --curl-back: #f0fdfa;
+}
+
+/* Font selections */
+body.font-sans .editor-content {
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+
+body.font-handwriting .editor-content {
+  font-family: var(--font-hand);
+  line-height: 1.4;
+  letter-spacing: 0.3px;
+}
+
+body.font-manga .editor-content {
+  font-family: var(--font-manga);
+  line-height: 1.45;
+  letter-spacing: 0.2px;
+}
+
+/* Mixed Font Overrides: spans and inline font styling inside any note */
+[style*="Caveat"], [style*="caveat"], .font-handwriting, span.font-handwriting, [data-font="handwriting"] {
+  font-family: var(--font-hand) !important;
+  letter-spacing: 0.3px !important;
+}
+
+[style*="Patrick Hand"], [style*="patrick hand"], [style*="PatrickHand"], .font-manga, span.font-manga, [data-font="manga"] {
+  font-family: var(--font-manga) !important;
+  letter-spacing: 0.2px !important;
+}
+
+[style*="sans-serif"], [style*="-apple-system"], [style*="Segoe UI"], .font-sans, span.font-sans, [data-font="sans"] {
+  font-family: var(--font-sans) !important;
+  letter-spacing: normal !important;
+}
+
+/* ==========================================================================
+   Sticky Note Card Container (100% Solid Opaque Paper, Zero Acrylic Blur)
+   ========================================================================== */
+
+.sticky-note {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-note);
+  /* 100% opaque solid paper lighting gradient */
+  background-image: linear-gradient(150deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.05) 35%, rgba(0, 0, 0, 0.03) 70%, rgba(0, 0, 0, 0.12) 100%);
+  border-radius: var(--radius-window);
+  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--border-subtle);
+  overflow: visible;
+  position: relative;
+  /* Organic tilt per note */
+  transform: rotate(var(--note-tilt, 0deg)) translateZ(0);
+  transform-origin: center center;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+  transition: background-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-peel);
+}
+
+.sticky-note:hover {
+  box-shadow: var(--shadow-paper-hover);
+}
+
+/* Keep text perfectly straight and sharp by counter-rotating content area */
+.note-body {
+  transform: rotate(calc(-1 * var(--note-tilt, 0deg))) translateZ(0);
+  transform-origin: center center;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+/* Top adhesive strip highlight */
+.sticky-note::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 100%);
+  border-top-left-radius: var(--radius-window);
+  border-top-right-radius: var(--radius-window);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   5 Exaggerated Real Paper Shapes (clip-path, shadows & folds)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tilted Classic (2-3 degrees tilt, flat crisp rectangle)
+   -------------------------------------------------------------------------- */
+body.style-classic .sticky-note {
+  clip-path: none;
+}
+body.style-classic .peel-corner,
+body.style-classic .washi-tape,
+body.style-classic .bent-shadow {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. Corner Curl (48px Exaggerated Peel with Folded Triangle & Under-Shadow)
+   -------------------------------------------------------------------------- */
+body.style-corner-curl .sticky-note {
+  /* Paper itself has its bottom-right corner cut off diagonally by 48px */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 48px), calc(100% - 48px) 100%, 0 100%);
+}
+
+body.style-corner-curl .peel-corner {
+  display: block;
+}
+body.style-corner-curl .washi-tape,
+body.style-corner-curl .bent-shadow {
+  display: none !important;
+}
+
+/* 48px Peeling Corner Elements */
+.peel-corner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 48px;
+  height: 48px;
+  pointer-events: none !important;
+  z-index: 20;
+  transition: transform var(--transition-peel);
+}
+
+/* Deep distinct shadow underneath the lifted corner */
+.peel-shadow {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 52px;
+  height: 52px;
+  pointer-events: none !important;
+  background: radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.22) 42%, transparent 70%);
+  box-shadow: -8px -8px 20px rgba(0, 0, 0, 0.4);
+  transition: transform var(--transition-peel), opacity var(--transition-peel);
+}
+
+/* The 48px folded flap (lighter paper underside + dark crease line) */
+.peel-fold {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 48px;
+  height: 48px;
+  pointer-events: none !important;
+  /* Diagonal folded triangle pointing up-left */
+  clip-path: polygon(0 100%, 100% 0, 0 0);
+  background: linear-gradient(135deg, #ffffff 0%, var(--curl-back, #fffef5) 45%, rgba(0, 0, 0, 0.12) 100%);
+  box-shadow: -3px -3px 10px rgba(0, 0, 0, 0.3);
+  transition: transform var(--transition-peel), box-shadow var(--transition-peel);
+}
+
+/* Dark crease line along fold */
+.peel-fold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 46%, rgba(0, 0, 0, 0.3) 48%, rgba(0, 0, 0, 0.5) 50%, transparent 52%);
+  pointer-events: none;
+}
+
+/* Hover lift: corner curls up further by ~15% */
+.sticky-note:hover .peel-corner {
+  transform: translate(-3px, -3px);
+}
+
+.sticky-note:hover .peel-fold {
+  transform: scale(1.15);
+  box-shadow: -5px -5px 16px rgba(0, 0, 0, 0.4);
+}
+
+.sticky-note:hover .peel-shadow {
+  transform: scale(1.22);
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   3. Bent Edge (Bottom curves upward by 14px with curved shadow)
+   -------------------------------------------------------------------------- */
+body.style-bent-edge .sticky-note {
+  /* Bottom edge curves upward by 14px in center */
+  clip-path: polygon(0% 0%, 100% 0%, 100% calc(100% - 2px), 92% calc(100% - 6px), 80% calc(100% - 11px), 50% calc(100% - 15px), 20% calc(100% - 11px), 8% calc(100% - 6px), 0% calc(100% - 2px));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15), 0 14px 26px -2px rgba(0, 0, 0, 0.28);
+}
+
+body.style-bent-edge .peel-corner,
+body.style-bent-edge .washi-tape {
+  display: none !important;
+}
+
+body.style-bent-edge .bent-shadow {
+  display: block;
+}
+
+/* Prominent curved desk shadow underneath the arch */
+.bent-shadow {
+  display: none;
+  position: absolute;
+  bottom: -8px;
+  left: 8%;
+  right: 8%;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0.2) 55%, transparent 75%);
+  box-shadow: 0 16px 24px rgba(0, 0, 0, 0.38);
+  z-index: -1;
+  pointer-events: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.style-bent-edge .sticky-note:hover .bent-shadow {
+  transform: scale(1.1) translateY(3px);
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* --------------------------------------------------------------------------
+   4. Wavy Curl (Top & Bottom ripple with 3D cylindrical lighting gradient)
+   -------------------------------------------------------------------------- */
+body.style-wavy-curl .sticky-note {
+  /* Undulating top and bottom edges */
+  clip-path: polygon(0% 5px, 18% 0px, 38% 7px, 62% 1px, 85% 8px, 100% 4px, 100% calc(100% - 5px), 85% calc(100% - 10px), 62% calc(100% - 2px), 38% calc(100% - 11px), 18% calc(100% - 3px), 0% calc(100% - 8px));
+  /* High contrast cylindrical gradient simulating paper bowing in 3D */
+  background-image: linear-gradient(108deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.08) 25%, rgba(0, 0, 0, 0.18) 50%, rgba(255, 255, 255, 0.38) 72%, rgba(0, 0, 0, 0.22) 100%);
+  box-shadow: -2px 6px 14px rgba(0, 0, 0, 0.14), 14px 22px 34px -2px rgba(0, 0, 0, 0.32);
+}
+
+body.style-wavy-curl .peel-corner,
+body.style-wavy-curl .washi-tape,
+body.style-wavy-curl .bent-shadow {
+  display: none !important;
+}
+
+body.style-wavy-curl .sticky-note:hover {
+  transform: rotate(var(--note-tilt, 0deg)) translateY(-3px) translateZ(0);
+  box-shadow: -2px 8px 18px rgba(0, 0, 0, 0.18), 16px 26px 40px -2px rgba(0, 0, 0, 0.36);
+}
+
+/* --------------------------------------------------------------------------
+   5. Taped (Semi-transparent tape strip across top-left corner)
+   -------------------------------------------------------------------------- */
+body.style-taped .sticky-note {
+  clip-path: none;
+}
+
+body.style-taped .washi-tape {
+  display: block;
+}
+body.style-taped .peel-corner,
+body.style-taped .bent-shadow {
+  display: none !important;
+}
+
+/* Realistic Washi Tape Strip across top corner */
+.washi-tape {
+  display: none;
+  position: absolute;
+  top: -12px;
+  left: 18px;
+  transform: rotate(-18deg);
+  width: 92px;
+  height: 28px;
+  background: var(--washi-bg, rgba(255, 255, 255, 0.85));
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.03) 10px, rgba(0, 0, 0, 0.03) 20px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
+  border-left: 3px dashed rgba(0, 0, 0, 0.22);
+  border-right: 3px dashed rgba(0, 0, 0, 0.22);
+  border-radius: 2px;
+  z-index: 5 !important;
+  pointer-events: none !important;
+}
+
+/* Hide paper decorations in collapsed mode */
+.sticky-note.is-collapsed {
+  clip-path: none !important;
+}
+
+.sticky-note.is-collapsed .peel-corner,
+.sticky-note.is-collapsed .washi-tape,
+.sticky-note.is-collapsed .bent-shadow {
+  display: none !important;
+}
+
+/* ==========================================================================
+   Header Bar (Frameless Draggable Window Region)
+   ========================================================================== */
+
+.note-header {
+  height: 34px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  -webkit-app-region: drag;
+  position: relative;
+  z-index: 25;
+  border-bottom: 1px solid transparent;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sticky-note.is-collapsed .note-header {
+  border-bottom: none;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  -webkit-app-region: no-drag;
+}
+
+.header-drag-zone {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  cursor: move;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  -webkit-app-region: no-drag;
+  margin-left: auto;
+}
+
+#btnDelete {
+  flex-shrink: 0 !important;
+  z-index: 30;
+}
+
+/* Responsive icon folding for very compact notes */
+@media (max-width: 250px) {
+  #btnPin {
+    display: none !important;
+  }
+}
+@media (max-width: 232px) {
+  #btnLock {
+    display: none !important;
+  }
+}
+
+.sticky-note.is-collapsed .header-right {
+  display: flex !important;
+}
+.sticky-note.is-collapsed #btnDelete {
+  display: flex !important;
+}
+.sticky-note.is-collapsed #btnCollapse {
+  display: flex !important;
+}
+.sticky-note.is-collapsed #btnNew {
+  display: flex !important;
+}
+.sticky-note.is-collapsed #btnReminder {
+  display: flex !important;
+}
+.sticky-note.is-collapsed #btnPin {
+  display: flex !important;
+}
+.sticky-note.is-collapsed #btnLock {
+  display: flex !important;
+}
+.sticky-note.is-collapsed #btnMore {
+  display: none !important;
+}
+
+.collapsed-preview {
+  display: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.sticky-note.is-collapsed .collapsed-preview {
+  display: inline-block !important;
+}
+
+/* Hide all resize handles and grips in collapsed mode so X button is clean and unblocked */
+.sticky-note.is-collapsed .resize-handle-br,
+.sticky-note.is-collapsed .resize-handle-bl,
+.sticky-note.is-collapsed .resize-edge-r,
+.sticky-note.is-collapsed .resize-edge-b,
+.sticky-note.is-collapsed .resize-grip {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* While note is collapsed, NEVER render any popover or confirmation dialog */
+.sticky-note.is-collapsed .popover,
+.sticky-note.is-collapsed .confirm-dialog {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Icon Buttons */
+.icon-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-ui);
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  opacity: 0.65;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+  outline: none;
+}
+
+.icon-btn:hover {
+  opacity: 1;
+  background-color: var(--bg-header-hover);
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+.icon-btn.active {
+  opacity: 1;
+  background-color: var(--bg-header-hover);
+}
+
+.icon-btn.active svg {
+  stroke: var(--accent);
+  fill: var(--accent);
+}
+
+.icon-btn.delete-btn:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  opacity: 1;
+}
+
+/* ==========================================================================
+   Editor Body & Checklist
+   ========================================================================== */
+
+.note-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 14px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  -webkit-app-region: drag;
+}
+
+.sticky-note.is-collapsed .note-body,
+.sticky-note.is-collapsed .note-footer {
+  display: none !important;
+}
+
+.editor-content {
+  min-height: 48px;
+  outline: none;
+  color: var(--text-main);
+  font-size: 16px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  user-select: text;
+  cursor: text;
+  -webkit-app-region: no-drag;
+}
+
+.editor-content:empty::before {
+  content: attr(placeholder);
+  color: var(--text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+  display: block;
+}
+
+/* Checklist Items */
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  margin: 3px 0;
+  user-select: text;
+  -webkit-app-region: no-drag;
+}
+
+.checkbox-custom {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  margin-right: 8px;
+  margin-top: 3px;
+  border-radius: 4px;
+  border: 1.5px solid var(--checkbox-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-fast);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.checkbox-custom:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: scale(1.08);
+}
+
+.checklist-item[data-checked="true"] .checkbox-custom {
+  background-color: var(--checkbox-border);
+}
+
+.checklist-item[data-checked="true"] .checkbox-custom::after {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-0.5px, -0.5px);
+  display: block;
+}
+
+.checklist-text {
+  flex: 1;
+  outline: none;
+  word-break: break-word;
+  user-select: text;
+}
+
+.checklist-item[data-checked="true"] .checklist-text {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+/* ==========================================================================
+   Popovers & Customization Controls
+   ========================================================================== */
+
+.popover {
+  position: absolute;
+  top: 38px;
+  right: 8px;
+  background-color: var(--popover-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-ui);
+  box-shadow: var(--shadow-popover);
+  padding: 10px;
+  z-index: 99999 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+  animation: popoverFadeIn 0.15s ease-out;
+}
+
+.popover,
+.popover *,
+.confirm-dialog,
+.confirm-dialog *,
+.reminder-popover,
+.reminder-popover * {
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popover.hidden, .confirm-dialog.hidden, .toast.hidden {
+  display: none !important;
+}
+
+.popover-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+/* Color Palette Swatches */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 24px);
+  gap: 6px;
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.active {
+  border: 2px solid var(--text-main);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+.swatch-yellow { background-color: #fef08a; }
+.swatch-peach  { background-color: #fed7aa; }
+.swatch-pink   { background-color: #fbcfe8; }
+.swatch-purple { background-color: #e9d5ff; }
+.swatch-blue   { background-color: #bae6fd; }
+.swatch-green  { background-color: #bbf7d0; }
+.swatch-taupe  { background-color: #e7e5e4; }
+.swatch-teal   { background-color: #99f6e4; }
+
+/* Style Header Row (Label) */
+.style-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Paper Style Preview Thumbnails Row */
+.style-thumbnails-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.style-thumb-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  padding: 5px 3px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-muted);
+}
+
+.style-thumb-btn span {
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.style-thumb-btn:hover {
+  background: rgba(0, 0, 0, 0.07);
+  color: var(--text-main);
+}
+
+.style-thumb-btn.active {
+  background: var(--text-main);
+  color: var(--popover-bg);
+  border-color: var(--text-main);
+}
+
+/* Mini Visual Thumbnails */
+.thumb-preview {
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  position: relative;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.style-thumb-btn.active .thumb-preview {
+  border-color: currentColor;
+}
+
+/* 1. Classic */
+.thumb-classic {
+  transform: rotate(3deg);
+}
+
+/* 2. Curl */
+.thumb-corner-curl {
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 55% 100%, 0 100%);
+}
+.thumb-corner-curl::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  clip-path: polygon(0 100%, 100% 0, 0 0);
+  background: currentColor;
+  opacity: 0.5;
+}
+
+/* 3. Bent */
+.thumb-bent-edge {
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 50% 65%, 0 90%);
+}
+
+/* 4. Wavy */
+.thumb-wavy-curl {
+  clip-path: polygon(0 15%, 50% 0, 100% 15%, 100% 85%, 50% 100%, 0 85%);
+}
+
+/* 5. Taped */
+.thumb-taped {
+  transform: rotate(-3deg);
+}
+.thumb-taped::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 2px;
+  width: 10px;
+  height: 4px;
+  background: currentColor;
+  opacity: 0.6;
+  transform: rotate(-15deg);
+}
+
+/* Font Segments */
+.font-segments {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Style Popover Elements */
+.popover-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.popover-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.segmented-control {
+  display: flex;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-ui);
+  padding: 2px;
+  gap: 2px;
+}
+
+.segment-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 4px;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  text-align: center;
+}
+
+.segment-btn.active {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.size-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-ui);
+  padding: 2px 6px;
+}
+
+.size-btn {
+  width: 24px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.size-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.size-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-value {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--text-main);
+  cursor: pointer;
+  height: 4px;
+}
+
+/* Share Popover Actions */
+.share-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.btn-share-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border: none;
+  color: var(--text-main);
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-share-action:hover {
+  background: rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.btn-share-action:active {
+  transform: scale(0.98);
+}
+
+/* Floating Toast */
+.toast {
+  position: absolute;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(24, 24, 27, 0.94);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  z-index: 200;
+  pointer-events: none;
+  animation: toastFade 0.2s ease-out;
+  white-space: nowrap;
+}
+
+@keyframes toastFade {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Delete Confirmation Tooltip / Dialog */
+.confirm-dialog {
+  position: absolute;
+  top: 38px;
+  right: 6px;
+  max-width: min(220px, calc(100% - 12px));
+  background: var(--popover-bg);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  box-shadow: var(--shadow-popover);
+  border-radius: var(--radius-ui);
+  padding: 8px 10px;
+  z-index: 99999 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+  animation: popoverFadeIn 0.15s ease-out;
+}
+
+.confirm-text {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-main);
+  white-space: normal;
+  user-select: none;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.btn-cancel, .btn-danger {
+  border: none;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 4px;
+  cursor: pointer !important;
+  font-weight: 600;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-cancel {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--text-main);
+}
+
+.btn-cancel:hover, .btn-cancel:focus-visible {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.btn-danger:hover, .btn-danger:focus-visible {
+  background: #dc2626;
+}
+
+.btn-cancel:focus-visible, .btn-danger:focus-visible {
+  outline: 2px solid #0284c7 !important;
+  outline-offset: 2px !important;
+}
+
+/* ==========================================================================
+   Footer Status Bar & Resize Grip
+   ========================================================================== */
+
+.note-footer {
+  height: 20px;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 3px 12px;
+  opacity: 0.6;
+  font-size: 10px;
+  color: var(--text-muted);
+  -webkit-app-region: drag;
+}
+
+.save-status {
+  font-size: 10px;
+  letter-spacing: 0.2px;
+}
+
+/* Drag Anywhere: Alt key held makes entire note draggable with move cursor */
+body.alt-drag-active,
+body.alt-drag-active * {
+  cursor: move !important;
+}
+
+.resize-grip {
+  cursor: nwse-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  opacity: 0.65;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.resize-grip:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+/* ==========================================================================
+   Multi-Edge & Corner Interactive Resize Handles
+   ========================================================================== */
+.resize-handle-br {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  opacity: 0.65;
+  z-index: 45;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.resize-handle-br:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.resize-handle-bl {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  cursor: nesw-resize;
+  z-index: 45;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+}
+
+.resize-edge-r {
+  position: absolute;
+  top: 34px;
+  bottom: 18px;
+  right: 0;
+  width: 10px;
+  cursor: ew-resize;
+  z-index: 40;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+}
+
+.resize-edge-b {
+  position: absolute;
+  bottom: 0;
+  left: 18px;
+  right: 18px;
+  height: 10px;
+  cursor: ns-resize;
+  z-index: 40;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+}
+
+/* On corner-curl paper style, shift the bottom-right grip leftward past the 48px curl */
+body.style-corner-curl .resize-handle-br {
+  right: 52px !important;
+  bottom: 4px !important;
+}
+
+/* Hide all resize handles on locked or collapsed notes */
+body.is-locked .resize-handle-br,
+body.is-locked .resize-handle-bl,
+body.is-locked .resize-edge-r,
+body.is-locked .resize-edge-b,
+body.is-locked .resize-grip,
+.sticky-note.is-collapsed .resize-handle-br,
+.sticky-note.is-collapsed .resize-handle-bl,
+.sticky-note.is-collapsed .resize-edge-r,
+.sticky-note.is-collapsed .resize-edge-b,
+.sticky-note.is-collapsed .resize-grip {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* ==========================================================================
+   More Options Popover (⋯)
+   ========================================================================== */
+.more-popover {
+  min-width: 180px;
+  padding: 6px;
+}
+
+.more-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.more-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-ui);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-main);
+  text-align: left;
+  width: 100%;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  outline: none;
+  -webkit-app-region: no-drag !important;
+}
+
+.more-menu-item:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.more-menu-item:active {
+  transform: scale(0.98);
+}
+
+.more-item-icon {
+  font-size: 14px;
+  width: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.more-item-text {
+  flex: 1;
+}
+
+.more-menu-item .timer-badge {
+  position: static;
+  margin-left: auto;
+}
+
+/* Custom Scrollbars */
+.note-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.note-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.note-body::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: 4px;
+}
+
+.note-body::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
+}
+
+/* ==========================================================================
+   Export Mode Clean View (Captures only the paper without window UI)
+   ========================================================================== */
+
+body.exporting-image .note-header,
+body.exporting-image .note-footer,
+body.exporting-image .resize-handle-br,
+body.exporting-image .resize-handle-bl,
+body.exporting-image .resize-edge-r,
+body.exporting-image .resize-edge-b,
+body.exporting-image .popover,
+body.exporting-image .confirm-dialog,
+body.exporting-image .toast {
+  visibility: hidden !important;
+}
+
+/* ==========================================================================
+   Reminders & Notifications System
+   ========================================================================== */
+
+/* Bell Badge */
+.icon-btn.has-reminder {
+  color: #ea580c !important;
+}
+
+.reminder-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ea580c;
+  box-shadow: 0 0 5px rgba(234, 88, 12, 0.85);
+  pointer-events: none;
+}
+
+/* Reminder Popover */
+.reminder-popover {
+  top: 38px;
+  right: 8px;
+  width: 224px;
+  max-width: calc(100% - 16px);
+  max-height: calc(100% - 46px);
+  overflow-y: auto;
+  z-index: 99999 !important;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+}
+
+.reminder-popover,
+.reminder-popover * {
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+}
+
+/* While any popover is open, disable all window drag regions completely so mouse events reach buttons cleanly */
+body.has-open-popover .note-header,
+body.has-open-popover .note-body,
+body.has-open-popover .note-footer,
+body.has-open-popover .header-drag-zone,
+.sticky-note:has(.popover:not(.hidden)) .note-header,
+.sticky-note:has(.popover:not(.hidden)) .note-body,
+.sticky-note:has(.popover:not(.hidden)) .note-footer,
+.sticky-note:has(.popover:not(.hidden)) .header-drag-zone,
+.sticky-note:has(.confirm-dialog:not(.hidden)) .note-header,
+.sticky-note:has(.confirm-dialog:not(.hidden)) .note-body,
+.sticky-note:has(.confirm-dialog:not(.hidden)) .note-footer,
+.sticky-note:has(.confirm-dialog:not(.hidden)) .header-drag-zone {
+  -webkit-app-region: no-drag !important;
+}
+
+.reminder-popover::-webkit-scrollbar {
+  width: 4px;
+}
+.reminder-popover::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: 4px;
+}
+
+.active-reminder-box {
+  background-color: rgba(234, 88, 12, 0.08);
+  border: 1px solid rgba(234, 88, 12, 0.25);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  -webkit-app-region: no-drag !important;
+}
+
+.active-reminder-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.active-reminder-label {
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.active-reminder-text {
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.btn-cancel-reminder {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer !important;
+  align-self: flex-start;
+  -webkit-app-region: no-drag !important;
+  transition: all 0.15s ease;
+}
+
+.btn-cancel-reminder:hover {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.reminder-presets-row {
+  display: grid;
+  gap: 4px;
+  -webkit-app-region: no-drag !important;
+}
+
+.reminder-presets-row-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.reminder-presets-row-2 {
+  grid-template-columns: 1fr 1fr;
+  margin-top: 5px;
+}
+
+.reminder-preset-btn {
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  padding: 6px 3px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer !important;
+  text-align: center;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+  user-select: none;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.reminder-preset-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-color: var(--accent);
+}
+
+.reminder-preset-btn:active {
+  transform: scale(0.96);
+}
+
+.reminder-error {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #dc2626;
+  margin-top: 3px;
+  display: block;
+}
+
+.reminder-error.hidden {
+  display: none !important;
+}
+
+.reminder-custom-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  -webkit-app-region: no-drag !important;
+}
+
+.reminder-custom-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  padding: 5px 6px;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  background-color: #ffffff;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+  -webkit-app-region: no-drag !important;
+  user-select: auto !important;
+}
+
+.reminder-custom-input:focus {
+  border-color: var(--accent);
+}
+
+.btn-set-custom {
+  background-color: #1c1917;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer !important;
+  -webkit-app-region: no-drag !important;
+  transition: opacity 0.15s ease, transform var(--transition-fast);
+}
+
+.btn-set-custom:hover {
+  opacity: 0.9;
+}
+
+.btn-set-custom:active {
+  transform: scale(0.96);
+}
+
+/* Visual Glow and Shake Alert when Reminder Fires */
+@keyframes reminderGlowShake {
+  0%, 100% {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    transform: translate(0, 0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translate(-3px, -1px);
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.95), 0 0 40px rgba(234, 179, 8, 0.65);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translate(3px, 1px);
+    box-shadow: 0 0 28px rgba(245, 158, 11, 0.95), 0 0 45px rgba(234, 179, 8, 0.7);
+  }
+}
+
+.sticky-note.reminder-alert {
+  animation: reminderGlowShake 1.8s ease-in-out !important;
+  outline: 2px solid rgba(245, 158, 11, 0.9) !important;
+}
+
+/* ==========================================================================
+   Templates Popover Menu
+   ========================================================================== */
+.templates-popover {
+  top: 38px;
+  left: 8px;
+  right: auto;
+  width: 172px;
+  padding: 6px;
+  z-index: 99999 !important;
+  -webkit-app-region: no-drag !important;
+  pointer-events: auto !important;
+}
+
+.templates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.template-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer !important;
+  text-align: left;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  -webkit-app-region: no-drag !important;
+}
+
+.template-item-btn:hover {
+  background-color: var(--bg-header-hover);
+  transform: translateX(2px);
+}
+
+.template-icon {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Lock Mode & Badge
+   ========================================================================== */
+body.is-locked .sticky-note {
+  opacity: 0.82 !important;
+  filter: contrast(0.95);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+  transition: opacity 0.2s ease;
+}
+
+body.is-locked .editor-content {
+  user-select: none !important;
+  cursor: default !important;
+  pointer-events: none !important;
+}
+
+body.is-locked .note-header,
+body.is-locked .note-body,
+body.is-locked .note-footer,
+body.is-locked .header-drag-zone {
+  -webkit-app-region: no-drag !important;
+  cursor: default !important;
+}
+
+body.is-locked .icon-btn:not(#btnLock) {
+  pointer-events: none !important;
+  opacity: 0.25 !important;
+}
+
+body.is-locked .resize-grip {
+  display: none !important;
+}
+
+body.is-locked #btnLock {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  color: #e11d48 !important;
+  z-index: 99999 !important;
+  -webkit-app-region: no-drag !important;
+}
+
+.lock-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  font-size: 8px;
+  line-height: 1;
+  pointer-events: none;
+}
+.lock-badge.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   Snapping Subtle Highlight
+   ========================================================================== */
+.sticky-note.is-snapping {
+  box-shadow: var(--shadow-paper-hover), 0 0 0 2px rgba(14, 165, 233, 0.8), 0 0 16px rgba(14, 165, 233, 0.35) !important;
+  transition: box-shadow 0.1s ease;
+}
+
+/* ==========================================================================
+   Timer Strip & Badge
+   ========================================================================== */
+.timer-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  border: 1px solid #ffffff;
+  pointer-events: none;
+}
+.timer-badge.hidden {
+  display: none !important;
+}
+
+.timer-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  background-color: rgba(0, 0, 0, 0.04);
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+  font-size: 11.5px;
+  color: var(--text-main);
+  z-index: 10;
+  -webkit-app-region: no-drag;
+}
+.timer-strip.hidden {
+  display: none !important;
+}
+
+.timer-strip-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.timer-strip-time {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+
+.timer-strip-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timer-mini-btn {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  opacity: 0.75;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+.timer-mini-btn:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Timer Popover */
+.timer-popover {
+  top: 38px;
+  right: 60px;
+  width: 200px;
+  z-index: 99999 !important;
+  -webkit-app-region: no-drag !important;
+}
+
+.timer-pomodoro-row {
+  margin-top: 4px;
+}
+
+.btn-timer-preset {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.btn-timer-preset:hover {
+  background-color: var(--bg-header-hover);
+  border-color: var(--accent);
+}
+.btn-timer-preset.pomodoro {
+  background-color: #fff1f2;
+  border-color: #fecdd3;
+  color: #e11d48;
+}
+.btn-timer-preset.pomodoro:hover {
+  background-color: #ffe4e6;
+}
+
+.timer-presets-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.timer-custom-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.timer-custom-input {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  outline: none;
+}
+
+.btn-start-timer {
+  padding: 4px 10px;
+  background-color: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Stickers & Doodles Tray Popover
+   ========================================================================== */
+.sticker-popover {
+  top: 38px;
+  right: 32px;
+  width: 228px;
+  padding: 8px 10px;
+  z-index: 99999 !important;
+  -webkit-app-region: no-drag !important;
+}
+
+.popover-tabs {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  padding: 2px;
+  margin-bottom: 8px;
+}
+
+.popover-tab-btn {
+  flex: 1;
+  padding: 4px 6px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.popover-tab-btn.active {
+  background-color: #ffffff;
+  color: var(--text-main);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.sticker-choice-btn {
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+.sticker-choice-btn:hover {
+  background-color: var(--bg-header-hover);
+  transform: scale(1.18);
+}
+
+.sticker-tray-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Doodle Controls Section */
+.btn-toggle-pen {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-toggle-pen.active {
+  background-color: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.doodle-color-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.doodle-color-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.15s ease;
+}
+.doodle-color-btn.active {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+  transform: scale(1.15);
+}
+
+.doodle-size-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.doodle-size-btn {
+  flex: 1;
+  padding: 3px 6px;
+  font-size: 10.5px;
+  font-weight: 500;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.doodle-size-btn.active {
+  background-color: var(--bg-header-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.doodle-tools-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.doodle-tool-btn {
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+.doodle-tool-btn.active {
+  background-color: var(--bg-header-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+.doodle-tool-btn.danger {
+  color: #ef4444;
+}
+.doodle-tool-btn.danger:hover {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+}
+
+/* ==========================================================================
+   Doodle Canvas & Stickers Layer in Note Body
+   ========================================================================== */
+.note-body {
+  position: relative;
+}
+
+.doodle-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+body.pen-mode-active .doodle-canvas {
+  pointer-events: auto !important;
+  cursor: crosshair !important;
+  z-index: 25 !important;
+}
+
+.stickers-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.sticky-sticker {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  user-select: none;
+  cursor: grab;
+  line-height: 1;
+  padding: 2px;
+  border-radius: 6px;
+  transition: transform 0.05s ease;
+}
+
+.sticky-sticker:active {
+  cursor: grabbing;
+}
+
+.sticky-sticker:hover,
+.sticky-sticker.is-selected {
+  outline: 1.5px dashed rgba(14, 165, 233, 0.7);
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.sticker-content {
+  display: block;
+  font-size: inherit;
+  pointer-events: none;
+}
+
+.sticker-btn-delete {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 30;
+}
+
+.sticky-sticker:hover .sticker-btn-delete,
+.sticky-sticker.is-selected .sticker-btn-delete {
+  display: flex;
+}
+
+.sticker-resize-handle {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 14px;
+  height: 14px;
+  background-color: #0284c7;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  display: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 30;
+}
+
+.sticky-sticker:hover .sticker-resize-handle,
+.sticky-sticker.is-selected .sticker-resize-handle {
+  display: block;
+}
+
+/* Hide sticker control handles during image export */
+body.exporting-image .sticker-btn-delete,
+body.exporting-image .sticker-resize-handle {
+  display: none !important;
+}
+body.exporting-image .sticky-sticker {
+  outline: none !important;
+  background: transparent !important;
+}
+
+/* ==========================================================================
+   Sound & Animation Touches (Peel, Crumple, Auto-Fade)
+   ========================================================================== */
+.sticky-note.is-crumpling {
+  animation: noteCrumple 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+}
+
+@keyframes noteCrumple {
+  0% {
+    transform: scale(1) rotate(var(--note-tilt));
+    opacity: 1;
+  }
+  30% {
+    transform: scale(0.8) rotate(calc(var(--note-tilt) + 9deg)) skew(7deg, -7deg);
+    filter: contrast(1.25);
+    opacity: 0.95;
+  }
+  65% {
+    transform: scale(0.45) rotate(calc(var(--note-tilt) - 16deg)) skew(-14deg, 14deg);
+    filter: contrast(1.5) brightness(0.9);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(0.02) rotate(calc(var(--note-tilt) + 40deg));
+    opacity: 0;
+  }
+}
+
+/* Auto-faded inactive note styling */
+body.is-auto-faded .sticky-note {
+  opacity: 0.62 !important;
+  filter: contrast(0.9) saturate(0.75);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+body.is-auto-faded .sticky-note:hover {
+  opacity: 0.95 !important;
+  filter: none !important;
+}
+
+/* ==========================================================================
+   Accessibility: Focus-Visible Rings for Keyboard Navigation
+   ========================================================================== */
+.icon-btn:focus-visible,
+.swatch-btn:focus-visible,
+.style-thumb-btn:focus-visible,
+.segment-btn:focus-visible,
+.btn-timer-preset:focus-visible,
+.sticker-choice-btn:focus-visible,
+.btn-quick-remind:focus-visible,
+.btn-remind-action:focus-visible,
+.more-menu-item:focus-visible {
+  outline: 2px solid #0284c7 !important;
+  outline-offset: 2px !important;
+}
+

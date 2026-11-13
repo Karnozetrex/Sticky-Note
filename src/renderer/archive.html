@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; img-src 'self' data:;">
+  <title>StickyPad — Archive</title>
+  <link rel="stylesheet" href="archive.css">
+</head>
+<body>
+  <div class="archive-app">
+    <header class="archive-header">
+      <div class="header-info">
+        <h1 class="header-title">Archive 📦</h1>
+        <p class="header-subtitle">Archived notes saved safely. You can restore them anytime.</p>
+      </div>
+      <button id="btnEmptyArchive" class="btn-empty-archive" title="Permanently delete all archived notes">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        Empty Archive
+      </button>
+    </header>
+
+    <main class="archive-content" id="archiveContent">
+      <div id="archiveList" class="archive-list">
+        <!-- Dynamically rendered list of archived notes -->
+      </div>
+
+      <div id="archiveEmpty" class="archive-empty hidden">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">Your archive is empty.</div>
+        <div class="empty-subtext">Inactive notes will appear here when auto-archive is on.</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="archive.js"></script>
+</body>
+</html>
